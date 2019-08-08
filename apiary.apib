@@ -271,6 +271,124 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
 
 # Data Structures
 
+
+## User (object)
+
++ id: 1 (number, required)
++ email: test@fruitware.ru (string, required)
+    Valid email address
++ cellphone: `+70951234578` (string, required)
+    International mobile phone number
++ first_name: `Ted` (string)
+    First name
++ last_name: `Hancock` (string)
+    Last name
++ password: `qwerty` (string)
+    Used to register user only. Not needed in responses.
++ password2: `qwerty` (string)
+    Used to register user only. Should match first password. Not needed in responses.
++ country: `RU` (enum[string], required)
+    Value from the Countries dictionary
++ state: `AL` (enum[string], optional)
+    Value from the Countries dictionary used only when US country selected
++ phone: `+3731234567890` (string, optional)
+    International phone number
++ type: `personal` (enum[string], required)
+    
+    + Members
+    
+        + `company`
+        
++ email_status: true (boolean, required)
+    E-mail subscription status
++ company_name: `Some Cool LLC` (string, optional)
+    Required only if type is **company**
++ company_identity: `223233232` (string, optional)
+    Required only if type is **company**
++ company_vat_number: `223233232` (string, optional)
+    Required only if type is **company**
++ smartfitting_done: true (boolean, required)
+    if customer used fitting mechanism
++ smartfitting_date: `2018.12.24 23:10:10` (string, optional)
+    Date and time when fitting was stored
++ smartfitting_lsize: `1/2` (string, optional)
+    stored GRISHKO ® SIZE for left foot
++ smartfitting_rsize: `1/2` (string, optional)
+    stored GRISHKO ® SIZE for right foot
++ smartfitting_lvamp: 65 (number, optional)
+    Vamp height for left foot in mm
++ smartfitting_rvamp: 65 (number, optional)
+    Vamp height for left foot in mm
++ smartfitting_shank (enum[string], optional)
+    The pointe shoe insole shank
+
+    + Default: `SF`
+    
+    + Members
+        + `S`
+            soft
+        + `M`
+            medium
+        + `H`
+            hard
+        + `SS`
+            super soft
+        + `SH`
+            super hard
+        + `LM`
+            light medium
+        + `LH`
+            light hard
+        + `SF`
+            soft flexible
+        + `MF`
+            medium flexible
+        + `SHF`
+            super hard flexible
+
++ created_at: `2018.12.24 23:10:10` (string, required)
+    Registration Date and Time
++ updated_at: `2018.12.24 23:10:10` (string, required)
+    Last profile update Date and Time. Default value is equal to created_at property
+
+## Address (object)
+
++ id: 2 (number, required)
++ user_id: User.id (required)
+    Parent User object
++ type: `billing` (enum[string], required)
+    
+    + Members
+    
+        + `delivery`
+
++ firstname: `John` (string, required)
++ lastname: `John` (string, required)
++ company_name: `Some Cool LLC` (string, optional)
+    Required only for the **Company** account
++ company_identity: `223233232` (string, optional)
+    Required only for the **Company** account
++ company_vat_number: `223233232` (string, optional)
+    Required only for the **Company** account
++ country: `RU` (enum[string], required)
+    Value from the Countries dictionary
++ state: `AL` (enum[string], optional)
+    Value from the Countries dictionary used only when US country selected
++ city: `London` (string, required)
++ street: `Baker Street` (string, optional)
++ house: `13/b` (string, required)
+    Street house number with a possible index, modificator etc.
++ app: `1` (string, optional)
+    Appartment or office room number
++ zipcode: `20567` (string, required)
+    ZIP-code of the given address
++ cellphone: `+709512345678` (string, optional)
+    International mobile phone number
++ phone: `+3731234567890` (string, optional)
+    International phone number
+
+
+
 ## Product (object)
 
 + id: 123 (number, required)
@@ -289,11 +407,12 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
 + age_group: `adult` (string, optional)
 + gender: `male` (string, optional)
 + colour: `pink` (string, optional)
-+ type: `pointe` (enum[string], required)
++ type (enum[string], required)
 
     + Default: `pointe`
     
     + Members
+        + `pointe`
         + `accessory`
         + `wear`
         
@@ -305,13 +424,18 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
 ## Order (object)
 
 + id: 123 (number, required)
-+ user_id: 123 (number, required)
++ user_id: User.id (required)
+    related customer profile
++ currency: `EUR` (string, required)
+    order currency *applyable* to all order prices and amount
 + delivery_method: `ups` (string, required)
+    Delivery method name, used as the string to avoid dropped relations
 + delivery_price: 12 (number, required)
-+ delivery_currency: `EUR` (string, required)
 + delivery_free: false (boolean, required)
-+ delivery_free_limit: 120 (number, required)
++ delivery_free_limit: 120 (number, optional)
+    minimal sum of order to get free delivery if there is free delivery option enabled
 + delivery_alltogether: true (boolean, required)
+    to delivery items separatelly or only alltogether
 + payment_method: `creditcard` (enum[string], required)
     
     + Members
@@ -320,27 +444,43 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
 
 + discount_applied: true (boolean, required)
 + discount_code: `BLACKFRIDAY` (string, optional)
+    Some discount code, applicated to this order
 + discount_amount: 234 (number, optional)
 + discount_currency: `EUR` (string, optional)
 + note: `some note` (string, optional)
 + array[object]
     
     + Attributes
+        + product_id: Product.id (required)
+            Related product ID
+        + product_title: `MIRACLE POINTE SHOES` (string, required)
+            Related product Name
         + width: `XX` (enum[string], optional)
+            Optional parametr applicable for some products
         + size: 0.5 (enum[number], optional)
+            Optional parametr applicable for some products
+        + Shank: `LM` (enum[number], optional)
+            Optional parametr applicable for some products
         + quantity: 3 (number, required)
         + price: 23 (number, required)
         + price_vat: 27.6 (number, required)
         + amount: 69 (number, required)
         + amount_vat: 82.8 (number, required)
+        + delivered_number: 0 (number, required)
+            Number of delivered products (e.g. customer ordered 10 pairs and till now got 6)
         + array[object]
         
             + Attributes
                 + option_name: `color` (string, required)
                 + option_value: `pink` (string, required)
-        
++ billing_address: Address.id
+    related billing address
++ delivery_address: Address.id
+    related delivery address
 + tracking_number: `2337d787d728h3` (string, optional)
+    Number given by delivery service
 + tracking_url: `https://ups.com/check/2337d787d728h3` (string, optional)
+    URL on delivery service website to track parsel
 + status: `pending` (enum[string], required)
     
     + Members
@@ -355,117 +495,10 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
         
 + created_at: `2018.12.24 23:10:10` (string, required)
     Date and time of creation
++ dispatched_at: `2018.12.24 23:10:10` (string, optional)
+    Date and time of parsel's dispatch
 + updated_at: `2018.12.24 23:10:10` (string, required)
     Date and time of last update
-
-## User (object)
-
-+ id: 12345 (number, required)
-+ email: test@fruitware.ru (string, required)
-    Valid email address
-+ cellphone: `+7 (095) 123-45-78` (string, required)
-    International mobile phone number
-+ first_name: `Ted` (string)
-    First name
-+ last_name: `Hancock` (string)
-    Last name
-+ password: `qwerty` (string)
-    Used to register user only. Not needed in responses.
-+ password2: `qwerty` (string)
-    Used to register user only. Should match first password. Not needed in responses.
-+ country: `RU` (enum[string], required)
-    Value from the Countries dictionary
-+ state: `AL` (enum[string], optional)
-    Value from the Countries dictionary used only when US country selected
-+ phone: 1234567890 (number, optional)
-    International mobile phone number
-+ type: `personal` (enum[string], required)
-    
-    + Members
-    
-        + `company`
-        
-+ email_status: true (boolean, required)
-    E-mail subscription status
-+ company_name: `Some Cool LLC` (string, optional)
-    Required only if type is **company**
-+ company_identity: `223233232` (string, optional)
-    Required only if type is **company**
-+ company_vat_number: `223233232` (string, optional)
-    Required only if type is **company**
-+ created_at: `2018.12.24 23:10:10` (string, required)
-    Registration Date and Time
-+ updated_at: `2018.12.24 23:10:10` (string, required)
-    Last profile update Date and Time. Default value is equal to created_at property
-
-## Address (object)
-
-+ id
-+ user_id
-+ type: `billing` (enum[string], required)
-    
-    + Members
-        + `delivery`
-    
-+ firstname
-+ lastname
-+ company_number
-+ company_name
-+ company_vat_number
-+ company_vat_number_income_tax
-+ street
-+ house
-+ city
-+ zipcode
-+ country
-+ cellphone
-+ phone
-  
-
-## Photo (object)
-
-+ id: 24 (number, required)
-+ user_id: 123 (number, required)
-    User identifier
-+ type (required, enum[string])
-
-    Type of photo to process
-
-    + Members
-        + `passport`
-        + `passport_address`
-        + `driver_license_face`
-        + `driver_license_back`
-        + `truck_license_back`
-        + `selfie`
-        + `trailer_license`
-        + `vin_code`
-        + `insurance`
-
-+ filesize: 1567 (number)
-    Filesize in kilobytes (in case file is uploaded)
-+ filetype: `image/gif` (string)
-    File Mime type (in case file is uploaded)
-+ data (string) 
-    base64 encoded data (in case file is uploaded)
-+ status: `uploaded` (required, enum[string])
-
-    Photo status
-    
-    + Members
-        + `approved`
-        + `rejected`
-        + `on_moderation`
-        + `canceled`
-
-+ url (string)
-    URL to download image from static server (in case file was transfered to Server before)
-+ created_at: `2018.12.24 23:10:10` (string, required)
-    First upload Date and Time
-+ updated_at: `2018.12.24 23:10:10` (string, required)
-    Last upload Date and Time. Default value is equal to created_at property
-+ moderated_at: `2018.12.24 23:10:10` (string)
-    Date and time of moderation confirmation from the Office
 
 # Group User
 In general application doesn't allow any usage without authentification.
