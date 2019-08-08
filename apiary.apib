@@ -293,10 +293,13 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
     Value from the Countries dictionary used only when US country selected
 + phone: `+3731234567890` (string, optional)
     International phone number
-+ type: `personal` (enum[string], required)
++ type (enum[string], required)
+    Customer type — physical person or legal entity
+    
+    + Default: `personal`
     
     + Members
-    
+        + `personal`
         + `company`
         
 + email_status: true (boolean, required)
@@ -415,11 +418,27 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
         + `pointe`
         + `accessory`
         + `wear`
-        
++ category: Category.id
+    Related primary Category ID
 + created_at: `2018.12.24 23:10:10` (string, required)
     Date and time of transportation request
 + updated_at: `2018.12.24 23:10:10` (string, required)
     Date and time of last updated
+    
+## Category (object)
+
++ id: 123 (number, required)
++ parent_id: Category.id (optional)
+    parent category id if exists
++ name: `LEOTARDS` (string, required)
+    category name
++ description: `Wide choice of perfect fitted leotards by Grishko enables you to stand out during rehearsals and to emphasize your bright individuality and impeccable taste.` (string, required)
+    category description
++ created_at: `2018.12.24 23:10:10` (string, required)
+    Date and time of creation
++ updated_at: `2018.12.24 23:10:10` (string, required)
+    Date and time of last update
+
 
 ## Order (object)
 
@@ -436,9 +455,12 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
     minimal sum of order to get free delivery if there is free delivery option enabled
 + delivery_alltogether: true (boolean, required)
     to delivery items separatelly or only alltogether
-+ payment_method: `creditcard` (enum[string], required)
++ payment_method (enum[string], required)
+    
+    + Default: `creditcard`
     
     + Members
+        + `creditcard`
         + `paypal`
         + `cash`
 
@@ -481,9 +503,12 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
     Number given by delivery service
 + tracking_url: `https://ups.com/check/2337d787d728h3` (string, optional)
     URL on delivery service website to track parsel
-+ status: `pending` (enum[string], required)
++ status (enum[string], required)
+  
+    + Default: `pending`
     
     + Members
+        + `pending`
         + `processing`
         + `failed`
         + `completed`
@@ -504,156 +529,121 @@ API documentation for Android and iOS Application **«Grishko Shop — Pointe Sh
 In general application doesn't allow any usage without authentification.
 
 Sequence of actions depends on client flow and is covered by exhaustive variety of scenarios below:
-* **Client opened the app for the very first time**:
-    1. **POST:** `/user/letmein` User is required to fulfil only phone number field to login or register;
-    2. *Server validates phone and sends User sms with special code to verify*;
-    3. **POST:** `/user/sms` User is expected to enter code received in sms-message;
-    4. **GET:** `/user/sms` In case there is no sms for some time User can request one more sms-message with new code;
-    5. *After confirmation of phone number server returns the Authorization Token with unlimited term of valiability + User data*;
-* **Client has had account on cesnok.ru**:
-    1. **POST:** `/user/convert` To convert website profile into app profile user is expected to input email and password used to authentificate him on the website;
-    2. **POST:** `/user/phone` Valid phone number is required to finish process of convertion account;
-    3. *Server validates phone and sends User sms with special code to verify*;
-    4. **POST:** `/user/sms` User is expected to enter code received in sms-message;
-    5. **GET:** `/user/sms` In case there is no sms for some time User can request one more sms-message with new code;
-    6. *After confirmation of phone number server returns the Authorization Token with unlimited term of valiability + User data*;
+* **Customer opened the app for the very first time**:
+    1. **POST:** `/user/register` User is required to fill several basic fields to register;
+    2. *Server validates email and confirm it's registered*;
+* **Customer was registered previously inside the app**:
+    1. **POST:** `/user/login` To login into the app
+    3. *Server validates email and password*;
+    4. **POST:** `/user/remind` in case user lost the password, the app can call the server-side and initiate password reset procedure;
+    5. **POST:** `/user/logout` logging user out and closing the session;
+    6. *After login or registration server returns the Authorization Token with unlimited term of valiability + User data*;
 
-## Auth by phone [/user/letmein]
-Application can authentificate user only by phone-number.
-It can be achieved with help of sms-codes.
-To avoid useless waste of money authorisation token with unlimited term of valiability.
+## Auth process [/user/login]
+Method to login with email and password either from the website or from the app.
 
-### Login or register [POST]
+### Login the user [POST]
 
 + Request (application/json)
 
     + Attributes
-        + phone: `0951234567` (required, string)
-            Valid russian mobile phone number without +7 and formatting. Pure numbers.
+        + email: `john.doe@fruitware.ru` (string, required)
+        + password: `1223dasefe` (string, required)
+    
++ Response 200 (application/json)
+
+    + Attributes
+        + token: `d015ac61626bf2e1c67d8828945b0f53` (required,string)
+            Identification token. Unique single-per-user 32-symbol code to identify successfully logged in User.
+        + user (User, required)
+            User's object with current stored values
+
+        
+## Register process [/user/register]
+Method to create a new customer's account
+
+### Register customer [POST]
+
++ Request (application/json)
+
+    + Attributes
+        + email: `john.doe@fruitware.ru` (string, required)
+        + first_name: `John` (string, required)
+        + last_name: `Doe` (string, required)
+        + password: `1223dasefe` (string, required)
+    
++ Response 200 (application/json)
+
+    + Attributes
+        + token: `d015ac61626bf2e1c67d8828945b0f53` (required,string)
+            Identification token. Unique single-per-user 32-symbol code to identify successfully logged in User.
+        + user (User, required)
+            User's object with current stored values
+
+        
+## Remind password process [/user/remind]
+Method to reset password
+
+### Reset [POST]
+
++ Request (application/json)
+
+    + Attributes
+        + email: `john.doe@fruitware.ru` (string, required)
 
 + Response 200 (application/json)
 
     + Attributes
-        + auth_session: `098f6bcd4621d373cade4e832627b4f6` (required,string)
-            32-symbol code of current authentification session
-        + is_registered: true (boolean, required)
-            due to both login and register functional server responding with registered flag
+        + status: true (boolean, required)
+            Update status
+        + message: `You'll receive an email with instructions soon` (string, required)
+            Some message to describe error OR confirm the reset
+
+
+## User's profile [/user]
+> **This methods require token and can be requested only after authorization**
+Application can show User's data and able to edit some of this data
+
+
+### Get User's profile [GET]
+
++ Request (application/json)
+
+    + Attributes
+        + token: `d015ac61626bf2e1c67d8828945b0f53` (required,string)
+            Identification token. Unique single-per-user 32-symbol code to identify successfully logged in User.
+    
++ Response 200 (application/json)
+
+    + Attributes
+        + user (User, required)
+            User's object with current stored values
             
 
-## SMS message [/user/sms]
-To proceed user requires SMS-message with code. It should be requested from this URL.
-Sms processing — application sends both phone and auth-session data to keep auth session and notify server about phone number.
-
-* *In case user didn't get any SMS he can request a new one. Only after 60 seconds!*
-* **The limit is 3 sms-messanages per session and then 24-hours block.**
-
-### Request SMS with code [POST]
+### Update User's profile [POST]
 
 + Request (application/json)
 
     + Attributes
-        + phone: `0951234567` (required,string)
-            Valid russian mobile phone number without +7 and formatting. Pure numbers.
-        + auth_session: `098f6bcd4621d373cade4e832627b4f6` (required,string)
-            32-symbol code of current authentification session
-        
-+ Response 200 (application/json)
-
-    + Attributes
-        + auth_session: "098f6bcd4621d373cade4e832627b4f6" (required,string)
-            32-symbol code of current authentification session
-        + is_sms_sent: true (boolean, required)
-            Flag which indicates that SMS-code was sent successfuly
-
-## Confirm code from SMS [/user/confirm]
-Since API notifies app that sms was sent successfuly — the only thing left to get auth token is confirm sms-code.
-This method is used to send sms-code, session identifier and phone number.
-
-
-### Send code, phone and auth-session [POST]
-+ Request (application/json)
-
-    + Attributes
-        + phone: `0951234567` (required,string)
-            Valid russian mobile phone number without +7 and formatting. Pure numbers.
-        + auth_session: `098f6bcd4621d373cade4e832627b4f6` (required,string)
-            32-symbol code of current authentification session
-        + code: 124232 (required,number)
-            6-digits verification code from sms-message
-
-+ Response 200 (application/json)
-    
-    + Attributes 
-        + user (User)
-            User object
-        + session_token: `098f6bcd4621d373cade4e832627b4f6` (required,string)
-            32-symbol code of current permanent session (valid for 1 year)
-
-
-## Website user login [/user/login]
-Method to login with email and password from cesnok.ru account.
-After receiving auth_session in case email-password pair was correct app should request sms-confirmation in normal mode.
-
-### Login with email and password [POST]
-
-+ Request (application/json)
-
-    + Attributes
-        + email: `test@cesnok.ru` (required,string)
-            Valid email address
-        + password: `qwerty` (required,string)
-            Valid password for the account on https://cesnok.ru
+        + token: `098f6bcd4621d373cade4e832627b4f6` (required,string)
+            Identification token. Unique single-per-user 32-symbol code to identify successfully logged in User.
+        + user (User, required)
+            User's object with updated data
 
 + Response 200 (application/json)
 
     + Attributes
-        + auth_session: "098f6bcd4621d373cade4e832627b4f6" (required,string)
-            32-symbol code of current authentification session
-
-## Website user set phone [/user/phone]
-Method to set phone number for user while login in though the website.
-Server sent SMS-code right after receiving the email to avoid additional requests.
-
-### Set phone [POST]
-
-+ Request (application/json)
-
-    + Attributes
-        + auth_session: "098f6bcd4621d373cade4e832627b4f6" (required,string)
-            32-symbol code of current authentification session
-        + phone: `0951234567` (required,string)
-            Valid russian mobile phone number without +7 and formatting. Pure numbers.
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + auth_session: "098f6bcd4621d373cade4e832627b4f6" (required,string)
-            32-symbol code of current authentification session
-        + is_sms_sent: true (boolean, required)
-            Flag which indicates that SMS-code was sent successfuly
-
-
-## Recover Password [/user/remind]
-Method to recover password from cesnok.ru
-
-### Request password recover [POST]
-
-+ Request (application/json)
-
-    + Attributes
-        + email: `test@cesnok.ru` (required,string)
-            Valid email address
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + is_email_sent: true (required,boolean)
-            Email with recover info was sent successfully
+        + status: true (boolean, required)
+            Update status
+        + message: `Your profile was updated` (string, required)
+            Some message to describe error OR confirm the update
+        + user (User, required)
+            User's object with current stored values
 
 ## User Logout [/user/logout]
 Method to log user out
 
-### Request password recover [POST]
+### Request user logout [POST]
 
 + Request (application/json)
 
@@ -667,64 +657,13 @@ Method to log user out
         + is_logged_out: true (required,boolean)
             Session was dropped
 
-
-
-## User profile [/user]
-
-> **This methods require token and can be requested only after authorization**
-
-### Get profile object [GET]
-    
-This method requiresDespite sending whole User object while updating the profile there is only two editable fields — **email** and **inn**.
-This fields can be updated only in case user has no previously stored values.
-**There is no possibility to changes once stored information.**
-
-+ Request (application/json)
-    
-    + Attributes
-        + token: `d015ac61626bf2e1c67d8828945b0f53` (required,string)
-            Identification token. Unique single-per-user 32-symbol code to identify successfully logged in User.
-
-
-+ Response 200 (application/json)
-
-    + Attributes (User)
-
-### Update profile info [POST]
-    
-+ Request (application/json)
-
-    + Attributes (User)
-        + email (optional,string)
-        + inn (optional, string)
-        + first_name (optional, string)
-        + last_name (optional, string)
-
-+ Response 200 (application/json)
-
-    + Attributes (User)
-
-
-# Group Request
-
-Basically all request data is gathered from other API (cesnok.ru).
-This API only awaits to be notified about driver's interest in single Cargo Request.
-
-> **Important! Any request update can be possible if the App has an active internet connection.**
-> **Otherwise App handle it offline.**
-
-1. Check the actual Request status before allowing User to apply.
-2. Apply to the Request online.
-
-## Apply to request path [/request/apply/{id}]
-
-+ Parameters
-    + id (required number)
-        Request ID
-
-# Group Products
+# Group Product endpoints
 
 Methods to interact with collection of Products or with single product
+Basically all product data can be received from this method
+
+> **Important! Any request update can be possible if the App has an active internet connection.**
+
 
 ## Get all products [GET /products]
 
@@ -828,7 +767,6 @@ This method used to return list of variables and avaluable values for it.
             }
 
 
-
 ## Product stock [GET /products/{product_id}/stock]
 
 Gets stock for selected combination of methods.
@@ -902,3 +840,8 @@ Also list of products in stock can be limited by fitting (*it's optional*).
                     },
                 }
             }
+            
+
+# Group Order
+
+Order endpoints — to create, list and show detailed order data
